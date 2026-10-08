@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAT - Santander</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+  <style>
+    .modal-fullscreen-mobile { padding: 0 !important; }
+    .modal-fullscreen-mobile .modal-dialog { max-width: 100%; height: 100%; margin: 0; }
+    .modal-fullscreen-mobile .modal-content { height: 100%; border-radius: 0; }
+    #signature-canvas {
+      border: 2px dashed #6c757d;
+      background-color: #ffffff;
+      touch-action: none;
+      cursor: crosshair;
+      width: 100%;
+      height: 300px;
+    }
+  </style>
+</head>
+
+<body class="bg-light">
+
+  <main class="container py-4" style="max-width: 800px;">
+    <div class="card shadow-sm">
+      
+      <div class="card-header bg-danger text-white">
+        <h4 class="mb-0 fs-5">Preenchimento de RAT - Santander</h4>
+      </div>
+
+      <div class="card-body">
+        <form id="ratForm">
+
+          <!-- IDENTIFICACAO & LOCALIZACAO -->
+          <h5 class="text-secondary border-bottom pb-2">Identificação do Chamado</h5>
+          <div class="row g-2 mb-4">
+            <div class="col-4">
+              <label class="form-label text-muted small mb-0">Nº Chamado</label>
+              <input type="text" id="chamado" class="form-control form-control-sm">
+            </div>
+            <div class="col-4">
+              <label class="form-label text-muted small mb-0">Agência</label>
+              <input type="text" id="agencia" class="form-control form-control-sm">
+            </div>
+            <div class="col-8">
+              <label class="form-label text-muted small mb-0">Endereço</label>
+              <input type="text" id="endereco" class="form-control form-control-sm">
+            </div>
+            <div class="col-4">
+              <label class="form-label text-muted small mb-0">Número</label>
+              <input type="text" id="numero" class="form-control form-control-sm">
+            </div>
+            <div class="col-5">
+              <label class="form-label text-muted small mb-0">Bairro</label>
+              <input type="text" id="bairro" class="form-control form-control-sm">
+            </div>
+            <div class="col-5">
+              <label class="form-label text-muted small mb-0">Município</label>
+              <input type="text" id="municipio" class="form-control form-control-sm" value="São Paulo">
+            </div>
+            <div class="col-2">
+              <label class="form-label text-muted small mb-0">UF</label>
+              <input type="text" id="uf" class="form-control form-control-sm" value="SP">
+            </div>
+          </div>
+          <div class="col-8">
+              <label class="form-label text-muted small mb-0">DEFEITO/CAUSA</label>
+              <input type="text" id="defeitoCausa" class="form-control form-control-sm">
+            </div>
+
+          <!-- HORARIOS -->
+          <h5 class="text-secondary border-bottom pb-2">Horários</h5>
+          <div class="row g-2 mb-4">
+            <div class="col-3">
+              <label class="form-label text-muted small mb-0">Partida</label>
+              <input type="text" id="hrPartida" class="form-control form-control-sm" value="07:00">
+            </div>
+            <div class="col-3">
+              <label class="form-label text-muted small mb-0">Chegada</label>
+              <input type="text" id="hrChegada" class="form-control form-control-sm" value="08:00">
+            </div>
+            <div class="col-3">
+              <label class="form-label text-muted small mb-0">Início</label>
+              <input type="text" id="hrInicio" class="form-control form-control-sm" value="08:30">
+            </div>
+            <div class="col-3">
+              <label class="form-label text-muted small mb-0">Término</label>
+              <input type="text" id="hrTermino" class="form-control form-control-sm" value="11:45">
+            </div>
+          </div>
+
+          <!--  EQUIPAMENTOS -->
+          <h5 class="text-secondary border-bottom pb-2">Equipamentos</h5>
+          <div class="row g-3 mb-4">
+            
+            <!-- Antigo -->
+            <div class="col-md-6 border-end">
+              <h6 class="text-danger">Equipamento Antigo</h6>
+              <input type="text" id="patAntigo" class="form-control form-control-sm mb-1" placeholder="Património">
+              <input type="text" id="serieAntigo" class="form-control form-control-sm mb-1" placeholder="Série">
+              <input type="text" id="modeloAntigo" class="form-control form-control-sm mb-1" placeholder="Modelo">
+              <input type="text" id="hostAntigo" class="form-control form-control-sm mb-1" placeholder="Host">
+              <input type="text" id="macAntigo" class="form-control form-control-sm" placeholder="MAC Address">
+            </div>
+            
+            <!-- Novo -->
+            <div class="col-md-6">
+              <h6 class="text-success">Equipamento Novo</h6>
+              <input type="text" id="patNovo" class="form-control form-control-sm mb-1" placeholder="Património">
+              <input type="text" id="serieNovo" class="form-control form-control-sm mb-1" placeholder="Série">
+              <input type="text" id="modeloNovo" class="form-control form-control-sm mb-1" placeholder="Modelo">
+              <input type="text" id="hostNovo" class="form-control form-control-sm mb-1" placeholder="Host">
+              <input type="text" id="macNovo" class="form-control form-control-sm" placeholder="MAC Address">
+            </div>
+          </div>
+
+          <!-- DESCRIÇÃO -->
+          <h5 class="text-secondary border-bottom pb-2">Descrição</h5>
+          <div class="mb-4">
+            <textarea id="descricao" class="form-control" rows="3" placeholder="Descreva os serviços..."></textarea>
+            <small class="text-muted">A quebra de linha será feita automaticamente no PDF.</small>
+          </div>
+
+          <!-- FECHAMENTO -->
+          <h5 class="text-secondary border-bottom pb-2">Fechamento e Responsáveis</h5>
+          <div class="row g-2 mb-4">
+            <div class="col-12">
+              <label class="form-label text-muted small mb-0">Nome do Suporte</label>
+              <input type="text" id="suporte" class="form-control form-control-sm">
+            </div>
+            <div class="col-8">
+              <label class="form-label text-muted small mb-0">Responsável (Cliente)</label>
+              <input type="text" id="responsavel" class="form-control form-control-sm">
+            </div>
+            <div class="col-4">
+              <label class="form-label text-muted small mb-0">Documento</label>
+              <input type="text" id="documento" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small mb-0">Local</label>
+              <input type="text" id="local" class="form-control form-control-sm" value="São Paulo - SP">
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small mb-0">Data</label>
+              <input type="text" id="data" class="form-control form-control-sm">
+            </div>
+          </div>
+
+          <!-- ASSINATURAS DIGITAIS -->
+          <h5 class="text-secondary border-bottom pb-2">Assinaturas</h5>
+          <div class="row g-2 mb-4">
+            <div class="col-6">
+              <button type="button" class="btn btn-outline-danger w-100 py-2" onclick="openSignature('responsavel')">
+                <span id="statusAssResponsavel">✍️ Assinatura Responsável</span>
+              </button>
+            </div>
+            <div class="col-6">
+              <button type="button" class="btn btn-outline-secondary w-100 py-2" onclick="openSignature('tecnico')">
+                <span id="statusAssTecnico">✍️ Assinatura Técnico</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- BOTAO GERAR -->
+          <div class="d-grid gap-2">
+            <button type="button" id="btnGerar" class="btn btn-success btn-lg fw-bold">
+              GERAR E COMPARTILHAR PDF
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL DE ASSINATURA -->
+  <div class="modal fade modal-fullscreen-mobile" id="signatureModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Assine no quadro abaixo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body d-flex flex-column align-items-center justify-content-center bg-light">
+          <canvas id="signature-canvas"></canvas>
+          <div class="mt-3 w-100 d-flex justify-content-between">
+            <button type="button" id="btnClearSignature" class="btn btn-warning fw-bold">Limpar</button>
+            <button type="button" class="btn btn-primary fw-bold" onclick="saveSignature()">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+
+    document.getElementById('data').value = new Date().toLocaleDateString('pt-BR');
+
+ 
+    // CONTROLO DE DUPLA ASSINATURA
+
+    const canvas = document.getElementById("signature-canvas");
+    const ctx = canvas.getContext("2d");
+    const sigModal = new bootstrap.Modal(document.getElementById('signatureModal'));
+
+    let isDrawing = false;
+    let currentSigner = '';
+    let signaturesData = { responsavel: null, tecnico: null };
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width - 32;
+      canvas.height = 300;
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#00008b";
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    document.getElementById("signatureModal").addEventListener("shown.bs.modal", resizeCanvas);
+
+    function openSignature(type) {
+      currentSigner = type;
+      document.getElementById("modalTitle").innerText = type === 'responsavel' ? 'Assinatura do Responsável' : 'Assinatura do Técnico';
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      sigModal.show();
+    }
+
+    function saveSignature() {
+      signaturesData[currentSigner] = canvas.toDataURL("image/png");
+      const btnId = currentSigner === 'responsavel' ? 'statusAssResponsavel' : 'statusAssTecnico';
+      document.getElementById(btnId).innerText = "✅ Registado!";
+      document.getElementById(btnId).parentElement.classList.replace('btn-outline-danger', 'btn-success');
+      document.getElementById(btnId).parentElement.classList.replace('btn-outline-secondary', 'btn-success');
+      sigModal.hide();
+    }
+
+    document.getElementById("btnClearSignature").addEventListener("click", () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      signaturesData[currentSigner] = null;
+    });
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      const y = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: x - rect.left, y: y - rect.top };
+    }
+
+    const startDrawing = (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); };
+    const draw = (e) => { if (!isDrawing) return; e.preventDefault(); ctx.lineTo(getPos(e).x, getPos(e).y); ctx.stroke(); };
+    const stopDrawing = () => { isDrawing = false; };
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseleave", stopDrawing);
+    canvas.addEventListener("touchstart", startDrawing, { passive: false });
+    canvas.addEventListener("touchmove", draw, { passive: false });
+    canvas.addEventListener("touchend", stopDrawing);
+
+
+    // GERAR O PDF
+  
+    document.getElementById("btnGerar").addEventListener("click", async function () {
+      const btn = document.getElementById("btnGerar");
+      btn.disabled = true;
+      btn.innerText = "A Processar PDF...";
+
+      try {
+        const response = await fetch("./rat-modelo-2.pdf"); 
+        if (!response.ok) throw new Error("Ficheiro PDF base não encontrado.");
+        
+        const existingPdfBytes = await response.arrayBuffer();
+        const { PDFDocument, rgb, StandardFonts } = PDFLib;
+        const pdfDoc = await PDFDocument.load(existingPdfBytes);
+        const page = pdfDoc.getPages()[0];
+        const { height } = page.getSize();
+        const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+
+        function drawText(txt, x, y, size = 9) {
+          if (!txt) return;
+          page.drawText(String(txt), { x: x, y: height - y, size: size, font: font, color: rgb(0, 0, 0.6) });
+        }
+
+        // --- PREENCHIMENTO DOS CAMPOS ---
+        
+        // Chamado e Localização
+        drawText(document.getElementById("chamado").value, 84, 72);
+        drawText(document.getElementById("agencia").value, 82, 128);
+        drawText(document.getElementById("endereco").value, 89, 140);
+        drawText(document.getElementById("numero").value, 315, 140);
+        drawText(document.getElementById("bairro").value, 77, 154);
+        drawText(document.getElementById("uf").value, 60, 166);
+        drawText(document.getElementById("defeitoCausa").value, 88, 285);
+        drawText(document.getElementById("municipio").value, 353, 154);
+
+        // Horários
+        drawText(document.getElementById("hrPartida").value, 112, 93);
+        drawText(document.getElementById("hrChegada").value, 114, 106);
+        drawText(document.getElementById("hrInicio").value, 429, 95);
+        drawText(document.getElementById("hrTermino").value, 432, 106);
+
+        // Equipamento Antigo
+        drawText(document.getElementById("patAntigo").value, 93, 348);
+        drawText(document.getElementById("serieAntigo").value, 116, 361);
+        drawText(document.getElementById("modeloAntigo").value, 75, 374);
+        drawText(document.getElementById("hostAntigo").value, 87, 386);
+        drawText(document.getElementById("macAntigo").value, 101, 401);
+
+        // Equipamento Novo
+        drawText(document.getElementById("patNovo").value, 343, 348);
+        drawText(document.getElementById("serieNovo").value, 366, 362);
+        drawText(document.getElementById("modeloNovo").value, 330, 374);
+        drawText(document.getElementById("hostNovo").value, 339, 388);
+        drawText(document.getElementById("macNovo").value, 352, 400);
+
+        // --- DESCRIÇÃO COM QUEBRA DE LINHA ---
+        const descTexto = document.getElementById("descricao").value;
+        const startY = 569;      
+        const lineSpacing = 14;  
+        const maxLineWidth = 380;  
+        let paragraphs = descTexto.split('\n');
+        let currentYDesc = startY;
+
+        for (let p of paragraphs) {
+          let words = p.split(' ');
+          let currentLine = '';
+          for (let word of words) {
+            let testLine = currentLine ? currentLine + ' ' + word : word;
+            let textWidth = font.widthOfTextAtSize(testLine, 9);
+            
+            if (textWidth > maxLineWidth) {
+              drawText(currentLine, 133, currentYDesc); 
+              currentYDesc += lineSpacing; 
+            } else {
+              currentLine = testLine;
+            }
+          }
+          if (currentLine) {
+            drawText(currentLine, 133, currentYDesc);
+            currentYDesc += lineSpacing;
+          }
+        }
+
+        // Responsável e Fechamento
+        drawText(document.getElementById("responsavel").value, 104, 638);
+        drawText(document.getElementById("documento").value, 86, 666);
+
+        const dataCompleta = document.getElementById("data").value;
+        
+        const partesData = dataCompleta.split('/'); 
+
+        if (partesData.length === 3) {
+          const yData = 753;
+          
+          drawText(partesData[0], 373, yData); 
+          drawText(partesData[1], 405, yData); 
+          drawText(partesData[2], 435, yData); 
+          
+        } else {
+
+          drawText(dataCompleta, 369, 748); 
+        }
+        
+        drawText(document.getElementById("suporte").value, 392, 728); 
+        drawText(document.getElementById("local").value, 200, 754);   
+
+        // Imagens das Assinaturas
+        if (signaturesData.responsavel) {
+          const respImg = await pdfDoc.embedPng(signaturesData.responsavel);
+        
+          page.drawImage(respImg, { x: 100, y: height - 675 - 35, width: 140, height: 40 });
+        }
+        if (signaturesData.tecnico) {
+          const tecImg = await pdfDoc.embedPng(signaturesData.tecnico);
+  
+          page.drawImage(tecImg, { x: 331, y: height - 675 - 35, width: 140, height: 40 });
+        }
+
+        // Salvar PDF
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: "application/pdf" });
+        const fileName = `RAT_SANTANDER_${document.getElementById("chamado").value || 'SemChamado'}.pdf`;
+        const file = new File([blob], fileName, { type: "application/pdf" });
+
+        // Compartilhar
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "RAT Santander", text: "Segue a RAT preenchida." });
+        } else {
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = downloadUrl;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(downloadUrl);
+        }
+
+      } catch (error) {
+        alert("Erro ao processar PDF: " + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "GERAR E COMPARTILHAR PDF";
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAT - Preenchimento Digital</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+ <style>
+    .modal-fullscreen-mobile { padding: 0 !important; }
+    .modal-fullscreen-mobile .modal-dialog { max-width: 100%; height: 100%; margin: 0; }
+    .modal-fullscreen-mobile .modal-content { height: 100%; border-radius: 0; }
+    #signature-canvas {
+      border: 2px dashed #6c757d;
+      background-color: #ffffff;
+      touch-action: none;
+      cursor: crosshair;
+      width: 100%;
+      height: 300px;
+    }
+  </style>
+</head>
+
+<body class="bg-light">
+
+  <main class="container py-4" style="max-width: 800px;">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0 fs-5">Formulário RAT - Preenchimento</h4>
+      </div>
+
+      <div class="card-body">
+        <form id="ratForm">
+
+          <!-- IDENTIFICAÇÃO -->
+          <h5 class="text-secondary border-bottom pb-2">Identificação</h5>
+          <div class="row g-2 mb-3">
+            <div class="col-8">
+              <label class="form-label text-muted small mb-0">Cliente</label>
+              <input type="text" id="cliente" class="form-control form-control-sm" value="Boticario">
+            </div>
+            <div class="col-4">
+              <label class="form-label text-muted small mb-0">Data</label>
+              <input type="text" id="data" class="form-control form-control-sm" value="06/10/2026">
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small mb-0">Nº Chamado</label>
+              <input type="text" id="chamado" class="form-control form-control-sm" value="1-3404012987">
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small mb-0">Cidade/UF</label>
+              <input type="text" id="cidadeUf" class="form-control form-control-sm" value="São Paulo - SP">
+            </div>
+          </div>
+          <div class="col-12 mt-3">
+              <label class="form-label text-muted small mb-0">endereço</label>
+              <input type="text" id="endereço" class="form-control form-control-sm" placeholder="endereço do Cliente">
+          </div>
+
+          <!-- EQUIPAMENTOS -->
+          <h5 class="text-secondary border-bottom pb-2 mt-4">Equipamentos</h5>
+          <div id="equipamentos-container">
+
+            <!-- linhas geradas dinamicamente -->
+            <div class="row g-1 mb-2">
+              <div class="col-5"><input type="text" id="eq1_marca" class="form-control form-control-sm" placeholder="Marca (Eq 1)"></div>
+              <div class="col-4"><input type="text" id="eq1_serie" class="form-control form-control-sm" placeholder="Série"></div>
+              <div class="col-3"><input type="text" id="eq1_pat" class="form-control form-control-sm" placeholder="Património"></div>
+            </div>
+            <div class="row g-1 mb-2">
+              <div class="col-5"><input type="text" id="eq2_marca" class="form-control form-control-sm" placeholder="Marca (Eq 2)"></div>
+              <div class="col-4"><input type="text" id="eq2_serie" class="form-control form-control-sm" placeholder="Série"></div>
+              <div class="col-3"><input type="text" id="eq2_pat" class="form-control form-control-sm" placeholder="Património"></div>
+            </div>
+            <div class="row g-1 mb-2">
+              <div class="col-5"><input type="text" id="eq3_marca" class="form-control form-control-sm" placeholder="Marca (Eq 3)"></div>
+              <div class="col-4"><input type="text" id="eq3_serie" class="form-control form-control-sm" placeholder="Série"></div>
+              <div class="col-3"><input type="text" id="eq3_pat" class="form-control form-control-sm" placeholder="Património"></div>
+            </div>
+            <div class="row g-1 mb-3">
+              <div class="col-5"><input type="text" id="eq4_marca" class="form-control form-control-sm" placeholder="Marca (Eq 4)"></div>
+              <div class="col-4"><input type="text" id="eq4_serie" class="form-control form-control-sm" placeholder="Série"></div>
+              <div class="col-3"><input type="text" id="eq4_pat" class="form-control form-control-sm" placeholder="Património"></div>
+            </div>
+          </div>
+
+          <!--MATERIAL UTILIZADO -->
+          <h5 class="text-secondary border-bottom pb-2 mt-4">Material Utilizado</h5>
+          <div class="row g-2 mb-3">
+            <div class="col-12"><input type="text" id="mat1" class="form-control form-control-sm" placeholder="Material 1"></div>
+            <div class="col-12"><input type="text" id="mat2" class="form-control form-control-sm" placeholder="Material 2"></div>
+          </div>
+
+          <!-- LAUDO TeCNICO -->
+          <h5 class="text-secondary border-bottom pb-2 mt-4">Laudo Técnico (Máx 8 linhas)</h5>
+          <div class="mb-3">
+            <textarea id="laudo" class="form-control" rows="4" placeholder="Descreva os serviços realizados aqui. O texto fará a quebra de linha automaticamente."></textarea>
+            <small class="text-muted">O sistema ajustará automaticamente para não passar das bordas.</small>
+          </div>
+
+          <!-- HORARIOS & DADOS DO CLIENTE -->
+          <h5 class="text-secondary border-bottom pb-2 mt-4">Horários e Dados Finais</h5>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label text-muted small mb-0">Início</label>
+              <input type="text" id="hrInicio" class="form-control form-control-sm" value="07:30">
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small mb-0">Término</label>
+              <input type="text" id="hrTermino" class="form-control form-control-sm" value="10:45">
+            </div>
+            <div class="col-12 mt-3">
+              <label class="form-label text-muted small mb-0">Suporte</label>
+              <input type="text" id="suporte" class="form-control form-control-sm" placeholder="Nome do Suporte">
+            </div>
+            <div class="col-12 mt-3">
+              <label class="form-label text-muted small mb-0">Nome do Cliente</label>
+              <input type="text" id="nomeCliente" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small mb-0">Documento (RG/CPF)</label>
+              <input type="text" id="docCliente" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small mb-0">Telefone</label>
+              <input type="text" id="telCliente" class="form-control form-control-sm">
+            </div>
+          </div>
+
+          <!-- ASSINATURAS -->
+          <h5 class="text-secondary border-bottom pb-2 mt-4">Assinaturas Digitais</h5>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <button type="button" class="btn btn-outline-primary w-100 py-2" onclick="openSignature('cliente')">
+                <span id="statusAssCliente">✍️ Assinatura Cliente</span>
+              </button>
+            </div>
+            <div class="col-6">
+              <button type="button" class="btn btn-outline-secondary w-100 py-2" onclick="openSignature('tecnico')">
+                <span id="statusAssTecnico">✍️ Assinatura Técnico</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- BOTAO GERAR PDF -->
+          <div class="d-grid gap-2 mt-5">
+            <button type="button" id="btnGerar" class="btn btn-success btn-lg fw-bold">
+              GERAR E COMPARTILHAR PDF
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL DE ASSINATURA -->
+  <div class="modal fade modal-fullscreen-mobile" id="signatureModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Assine no quadro abaixo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body d-flex flex-column align-items-center justify-content-center bg-light">
+          <canvas id="signature-canvas"></canvas>
+          <div class="mt-3 w-100 d-flex justify-content-between">
+            <button type="button" id="btnClearSignature" class="btn btn-warning fw-bold">Limpar</button>
+            <button type="button" class="btn btn-primary fw-bold" onclick="saveSignature()">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    
+    // ASSINATURAS (CONTROLO MÚLTIPLO)
+  
+    const canvas = document.getElementById("signature-canvas");
+    const ctx = canvas.getContext("2d");
+    const sigModal = new bootstrap.Modal(document.getElementById('signatureModal'));
+
+    let isDrawing = false;
+    let currentSigner = '';
+    let signaturesData = { cliente: null, tecnico: null };
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width - 32; 
+      canvas.height = 300;
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#00008b";
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    document.getElementById("signatureModal").addEventListener("shown.bs.modal", resizeCanvas);
+
+    function openSignature(type) {
+      currentSigner = type;
+      document.getElementById("modalTitle").innerText = type === 'cliente' ? 'Assinatura do Cliente' : 'Assinatura do Técnico';
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      sigModal.show();
+    }
+
+    function saveSignature() {
+      signaturesData[currentSigner] = canvas.toDataURL("image/png");
+      const btnId = currentSigner === 'cliente' ? 'statusAssCliente' : 'statusAssTecnico';
+      document.getElementById(btnId).innerText = "✅ Registado!";
+      document.getElementById(btnId).parentElement.classList.replace('btn-outline-primary', 'btn-success');
+      document.getElementById(btnId).parentElement.classList.replace('btn-outline-secondary', 'btn-success');
+      sigModal.hide();
+    }
+
+    document.getElementById("btnClearSignature").addEventListener("click", () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      signaturesData[currentSigner] = null;
+    });
+
+    // Lógica de Desenho
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      const y = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: x - rect.left, y: y - rect.top };
+    }
+
+    const startDrawing = (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); };
+    const draw = (e) => { if (!isDrawing) return; e.preventDefault(); ctx.lineTo(getPos(e).x, getPos(e).y); ctx.stroke(); };
+    const stopDrawing = () => { isDrawing = false; };
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseleave", stopDrawing);
+    canvas.addEventListener("touchstart", startDrawing, { passive: false });
+    canvas.addEventListener("touchmove", draw, { passive: false });
+    canvas.addEventListener("touchend", stopDrawing);
+
+   
+    // GERAR E PREENCHER O PDF
+  
+    document.getElementById("btnGerar").addEventListener("click", async function () {
+      const btn = document.getElementById("btnGerar");
+      btn.disabled = true;
+      btn.innerText = "A Processar PDF...";
+
+      try {
+        const response = await fetch("./rat-base.pdf"); 
+        if (!response.ok) throw new Error("Ficheiro base PDF não encontrado.");
+        
+        const existingPdfBytes = await response.arrayBuffer();
+        const { PDFDocument, rgb, StandardFonts } = PDFLib;
+        const pdfDoc = await PDFDocument.load(existingPdfBytes);
+        const page = pdfDoc.getPages()[0];
+        const { height } = page.getSize();
+        const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+        function drawText(txt, x, y, size = 9) {
+          if (!txt) return;
+          page.drawText(String(txt), { x: x, y: height - y, size: size, font: font, color: rgb(0, 0, 0.6) });
+        }
+
+        //  Identificação
+        drawText(document.getElementById("cliente").value, 78, 114);
+        drawText(document.getElementById("data").value, 365, 114);
+        drawText(document.getElementById("chamado").value, 151, 136);
+        drawText(document.getElementById("endereço").value, 92, 159);
+        drawText(document.getElementById("cidadeUf").value, 395, 156);
+
+        //  Equipamentos
+        drawText(document.getElementById("eq1_marca").value, 38, 250);
+        drawText(document.getElementById("eq1_serie").value, 207, 250);
+        drawText(document.getElementById("eq1_pat").value, 309, 251);
+
+        drawText(document.getElementById("eq2_marca").value, 39, 267);
+        drawText(document.getElementById("eq2_serie").value, 211, 267);
+        drawText(document.getElementById("eq2_pat").value, 311, 266);
+
+        drawText(document.getElementById("eq3_marca").value, 39, 282);
+        drawText(document.getElementById("eq3_serie").value, 211, 283);
+        drawText(document.getElementById("eq3_pat").value, 309, 282);
+
+        drawText(document.getElementById("eq4_marca").value, 39, 297);
+        drawText(document.getElementById("eq4_serie").value, 209, 298);
+        drawText(document.getElementById("eq4_pat").value, 309, 298);
+
+        // 3. Material Utilizado
+        drawText(document.getElementById("mat1").value, 42, 350);
+        drawText(document.getElementById("mat2").value, 39, 365);
+
+        //  Laudo Tecnico 
+        const laudoRaw = document.getElementById("laudo").value;
+        const maxLineWidth = 510;
+        let paragraphs = laudoRaw.split('\n');
+        let linesToPrint = [];
+
+        for (let p of paragraphs) {
+          let words = p.split(' ');
+          let currentLine = '';
+          for (let word of words) {
+            let testLine = currentLine ? currentLine + ' ' + word : word;
+            let textWidth = font.widthOfTextAtSize(testLine, 9);
+            if (textWidth > maxLineWidth) {
+              linesToPrint.push(currentLine);
+              currentLine = word;
+            } else {
+              currentLine = testLine;
+            }
+          }
+          if (currentLine) linesToPrint.push(currentLine);
+        }
+
+        const laudoYCoords = [417, 439, 460, 482, 506, 528, 548, 573]; 
+        
+        for (let i = 0; i < Math.min(linesToPrint.length, 8); i++) {
+          drawText(linesToPrint[i], 40, laudoYCoords[i]); 
+        }
+
+        //  Horários e Dados Pessoais
+        drawText(document.getElementById("hrInicio").value, 136, 614);
+        drawText(document.getElementById("hrTermino").value, 430, 615);
+
+        drawText(document.getElementById("suporte").value, 136, 632);
+        
+        drawText(document.getElementById("nomeCliente").value, 138, 653);
+        drawText(document.getElementById("docCliente").value, 141, 674);
+        drawText(document.getElementById("telCliente").value, 137, 696);
+
+        //  Imagens das Assinaturas
+        if (signaturesData.cliente) {
+          const cliImg = await pdfDoc.embedPng(signaturesData.cliente);
+
+          page.drawImage(cliImg, { x: 136, y: height - 732 - 35, width: 140, height: 40 });
+        }
+        if (signaturesData.tecnico) {
+          const tecImg = await pdfDoc.embedPng(signaturesData.tecnico);
+       
+          page.drawImage(tecImg, { x: 441, y: height - 729 - 35, width: 140, height: 40 });
+        }
+
+        // Guardar e Partilhar
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: "application/pdf" });
+        const fileName = `RAT_${document.getElementById("chamado").value}.pdf`;
+        const file = new File([blob], fileName, { type: "application/pdf" });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "RAT", text: "Segue a RAT." });
+        } else {
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = downloadUrl;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(downloadUrl);
+        }
+
+      } catch (error) {
+        alert("Erro ao processar PDF: " + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "GERAR E COMPARTILHAR PDF";
+      }
+    });
+  </script>
+
+</body>
+</html>
